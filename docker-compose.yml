@@ -11,6 +11,12 @@ services:
       - "5434:5432"
     volumes:
       - ./docker/init/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   mysql-db:
     image: mysql:8.0
@@ -47,3 +53,66 @@ services:
       timeout: 10s
       retries: 20
       start_period: 120s
+
+  users-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8887:8887"
+    environment:
+      APP_DATA_SOURCES_0_NAME: postgres-db
+      APP_DATA_SOURCES_0_STRATEGY: postgres
+      APP_DATA_SOURCES_0_URL: jdbc:postgresql://postgres-db:5432/users_db
+      APP_DATA_SOURCES_0_TABLE: users
+      APP_DATA_SOURCES_0_USER: testuser
+      APP_DATA_SOURCES_0_PASSWORD: testpass
+      APP_DATA_SOURCES_0_QUERY_TIMEOUT_SECONDS: 5
+      APP_DATA_SOURCES_0_POOL_MAXIMUM_POOL_SIZE: 10
+      APP_DATA_SOURCES_0_POOL_MINIMUM_IDLE: 2
+      APP_DATA_SOURCES_0_POOL_CONNECTION_TIMEOUT_MS: 5000
+      APP_DATA_SOURCES_0_POOL_IDLE_TIMEOUT_MS: 300000
+      APP_DATA_SOURCES_0_POOL_MAX_LIFETIME_MS: 600000
+      APP_DATA_SOURCES_0_MAPPING_ID: user_id
+      APP_DATA_SOURCES_0_MAPPING_USERNAME: login
+      APP_DATA_SOURCES_0_MAPPING_NAME: first_name
+      APP_DATA_SOURCES_0_MAPPING_SURNAME: last_name
+      APP_DATA_SOURCES_1_NAME: oracle-db
+      APP_DATA_SOURCES_1_STRATEGY: oracle
+      APP_DATA_SOURCES_1_URL: jdbc:oracle:thin:@oracle-db:1521/users_db
+      APP_DATA_SOURCES_1_TABLE: user_table
+      APP_DATA_SOURCES_1_USER: testuser
+      APP_DATA_SOURCES_1_PASSWORD: testpass
+      APP_DATA_SOURCES_1_QUERY_TIMEOUT_SECONDS: 5
+      APP_DATA_SOURCES_1_POOL_MAXIMUM_POOL_SIZE: 10
+      APP_DATA_SOURCES_1_POOL_MINIMUM_IDLE: 2
+      APP_DATA_SOURCES_1_POOL_CONNECTION_TIMEOUT_MS: 5000
+      APP_DATA_SOURCES_1_POOL_IDLE_TIMEOUT_MS: 300000
+      APP_DATA_SOURCES_1_POOL_MAX_LIFETIME_MS: 600000
+      APP_DATA_SOURCES_1_MAPPING_ID: ldap_login
+      APP_DATA_SOURCES_1_MAPPING_USERNAME: ldap_login
+      APP_DATA_SOURCES_1_MAPPING_NAME: name
+      APP_DATA_SOURCES_1_MAPPING_SURNAME: surname
+      APP_DATA_SOURCES_2_NAME: mysql-db
+      APP_DATA_SOURCES_2_STRATEGY: mysql
+      APP_DATA_SOURCES_2_URL: jdbc:mysql://mysql-db:3306/users_db
+      APP_DATA_SOURCES_2_TABLE: users
+      APP_DATA_SOURCES_2_USER: testuser
+      APP_DATA_SOURCES_2_PASSWORD: testpass
+      APP_DATA_SOURCES_2_QUERY_TIMEOUT_SECONDS: 5
+      APP_DATA_SOURCES_2_POOL_MAXIMUM_POOL_SIZE: 10
+      APP_DATA_SOURCES_2_POOL_MINIMUM_IDLE: 2
+      APP_DATA_SOURCES_2_POOL_CONNECTION_TIMEOUT_MS: 5000
+      APP_DATA_SOURCES_2_POOL_IDLE_TIMEOUT_MS: 300000
+      APP_DATA_SOURCES_2_POOL_MAX_LIFETIME_MS: 600000
+      APP_DATA_SOURCES_2_MAPPING_ID: user_id
+      APP_DATA_SOURCES_2_MAPPING_USERNAME: login
+      APP_DATA_SOURCES_2_MAPPING_NAME: first_name
+      APP_DATA_SOURCES_2_MAPPING_SURNAME: last_name
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+      oracle-db:
+        condition: service_healthy
