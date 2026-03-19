@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: User Aggregator API
+  description: Service for aggregating users data from multiple databases
+  version: 1.0.0
+
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users from all configured data sources
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+components:
+  schemas:
+    UserDto:
+      type: object
+      required:
+        - id
+        - username
+        - name
+        - surname
+      properties:
+        id:
+          type: string
+          example: "example-user-id-1"
+        username:
+          type: string
+          example: "user-1"
+        name:
+          type: string
+          example: "User"
+        surname:
+          type: string
+          example: "Userenko"
