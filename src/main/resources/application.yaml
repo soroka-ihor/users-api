@@ -25,6 +25,8 @@ resilience4j:
         base-config: database
       oracle-db:
         base-config: database
+      mysql-db:
+        base-config: database
 
 app:
   async:
@@ -69,3 +71,21 @@ app:
         username: ldap_login
         name: name
         surname: surname
+    - name: mysql-db
+      strategy: mysql
+      url: jdbc:mysql://localhost:3306/users_db
+      table: users
+      user: testuser
+      password: testpass
+      query-timeout-seconds: 5
+      pool:
+        maximum-pool-size: 10
+        minimum-idle: 2
+        connection-timeout-ms: 5000
+        idle-timeout-ms: 300000
+        max-lifetime-ms: 600000
+      mapping:
+        id: user_id
+        username: login
+        name: first_name
+        surname: last_name

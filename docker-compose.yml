@@ -12,6 +12,24 @@ services:
     volumes:
       - ./docker/init/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  mysql-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: users_db
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/init/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "testuser", "-ptestpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   oracle-db:
     image: gvenzl/oracle-xe:21-slim
     environment:

@@ -15,14 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserControllerIntegrationTest extends BaseAbstractIntegrationTest {
 
     @Test
-    void getAllUsers_returnsOkWithUsersFromBothDatabases() {
+    void getAllUsers_returnsOkWithUsersFromAllDatabases() {
         ResponseEntity<List<UserDto>> response = restTemplate.exchange(
                 "/users", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody())
                 .isNotNull()
-                .hasSize(10);
+                .hasSize(15);
     }
 
     @Test
@@ -56,5 +56,15 @@ class UserControllerIntegrationTest extends BaseAbstractIntegrationTest {
         assertThat(response.getBody())
                 .extracting(UserDto::getId)
                 .contains("o-001", "o-002", "o-003", "o-004", "o-005");
+    }
+
+    @Test
+    void getAllUsers_containsExpectedMysqlUsers() {
+        ResponseEntity<List<UserDto>> response = restTemplate.exchange(
+                "/users", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
+        assertThat(response.getBody())
+                .extracting(UserDto::getId)
+                .contains("m-001", "m-002", "m-003", "m-004", "m-005");
     }
 }

@@ -26,6 +26,8 @@ public abstract class BaseAbstractIntegrationTest {
             .withLocalCompose(true)
             .withExposedService("postgres-db", 5432,
                     Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)))
+            .withExposedService("mysql-db", 3306,
+                    Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(90)))
             .withExposedService("oracle-db", 1521,
                     Wait.forLogMessage(".*DATABASE IS READY TO USE!.*", 1)
                             .withStartupTimeout(Duration.ofMinutes(5)));
