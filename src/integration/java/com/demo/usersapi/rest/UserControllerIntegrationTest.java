@@ -1,6 +1,6 @@
 package com.demo.usersapi.rest;
 
-import com.demo.usersapi.BaseAbstractIntegrationTest;
+import com.demo.usersapi.AbstractIntegrationTest;
 import com.example.aggregator.model.UserDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UserControllerIntegrationTest extends BaseAbstractIntegrationTest {
+class UserControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void getAllUsers_returnsOkWithUsersFromAllDatabases() {

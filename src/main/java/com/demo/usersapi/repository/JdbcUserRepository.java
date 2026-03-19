@@ -2,12 +2,14 @@ package com.demo.usersapi.repository;
 
 import com.demo.usersapi.config.DataSourceConfig;
 import com.demo.usersapi.factory.DatabaseStrategyRegistry;
+import com.demo.usersapi.model.QuerySpec;
 import com.demo.usersapi.model.User;
+import com.demo.usersapi.model.UserFilter;
 import com.demo.usersapi.strategy.DatabaseStrategy;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -31,7 +33,7 @@ public class JdbcUserRepository extends AsyncResilientUserRepository {
     }
 
     @Override
-    public List<User> findAllUsers(DataSourceConfig config) {
+    public List<User> findAllUsers(DataSourceConfig config, UserFilter filter) {
         DataSource dataSource = dataSources.get(config.getName());
         if (dataSource == null) {
             throw new IllegalStateException("No DataSource bean found for name: %s".formatted(config.getName()));
@@ -43,7 +45,8 @@ public class JdbcUserRepository extends AsyncResilientUserRepository {
                 strategies.get("default")
         );
 
-        String query = strategy.buildQuery(config.getTable(), config.getMapping());
-        return new JdbcTemplate(dataSource).query(query, new DataClassRowMapper<>(User.class));
+        QuerySpec querySpec = strategy.buildQuery(config.getTable(), config.getMapping(), filter);
+        return new NamedParameterJdbcTemplate(dataSource)
+                .query(querySpec.sql(), querySpec.params(), new DataClassRowMapper<>(User.class));
     }
 }

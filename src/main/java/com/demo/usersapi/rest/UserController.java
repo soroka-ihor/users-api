@@ -1,5 +1,6 @@
 package com.demo.usersapi.rest;
 
+import com.demo.usersapi.model.UserFilter;
 import com.demo.usersapi.service.UserAggregationService;
 import com.example.aggregator.api.UsersApi;
 import com.example.aggregator.model.UserDto;
@@ -16,7 +17,8 @@ public class UserController implements UsersApi {
     private final UserAggregationService aggregationServiceFacade;
 
     @Override
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        return ResponseEntity.ok(aggregationServiceFacade.fetchAllUsers());
+    public ResponseEntity<List<UserDto>> getAllUsers(String name, String username, String surname) {
+        UserFilter filter = new UserFilter(name, username, surname);
+        return ResponseEntity.ok(aggregationServiceFacade.fetchAllUsers(filter));
     }
 }

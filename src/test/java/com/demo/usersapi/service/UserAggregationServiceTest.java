@@ -4,6 +4,7 @@ import com.demo.usersapi.config.DataSourceConfig;
 import com.demo.usersapi.config.DataSourceProperties;
 import com.demo.usersapi.mapper.UserMapper;
 import com.demo.usersapi.model.User;
+import com.demo.usersapi.model.UserFilter;
 import com.demo.usersapi.repository.UserRepository;
 import com.example.aggregator.model.UserDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class UserAggregationServiceTest {
@@ -42,12 +45,12 @@ class UserAggregationServiceTest {
         UserDto dto2 = new UserDto("2", "jsmith", "Jane", "Smith");
 
         when(dataSourceProperties.getDataSources()).thenReturn(List.of(config1, config2));
-        when(userRepository.findAllUsersAsync(config1)).thenReturn(CompletableFuture.completedFuture(List.of(user1)));
-        when(userRepository.findAllUsersAsync(config2)).thenReturn(CompletableFuture.completedFuture(List.of(user2)));
+        when(userRepository.findAllUsersAsync(eq(config1), any())).thenReturn(CompletableFuture.completedFuture(List.of(user1)));
+        when(userRepository.findAllUsersAsync(eq(config2), any())).thenReturn(CompletableFuture.completedFuture(List.of(user2)));
         when(userMapper.toDto(user1)).thenReturn(dto1);
         when(userMapper.toDto(user2)).thenReturn(dto2);
 
-        List<UserDto> result = service.fetchAllUsers();
+        List<UserDto> result = service.fetchAllUsers(UserFilter.empty());
 
         assertThat(result).containsExactlyInAnyOrder(dto1, dto2);
     }
@@ -68,7 +71,7 @@ class UserAggregationServiceTest {
     void fetchAllUsers_returnsEmptyList_whenNoDataSourcesConfigured() {
         when(dataSourceProperties.getDataSources()).thenReturn(List.of());
 
-        List<UserDto> result = service.fetchAllUsers();
+        List<UserDto> result = service.fetchAllUsers(UserFilter.empty());
 
         assertThat(result).isEmpty();
         verifyNoInteractions(userRepository, userMapper);
@@ -78,9 +81,9 @@ class UserAggregationServiceTest {
     void fetchAllUsers_returnsEmptyList_whenAllSourcesReturnNoUsers() {
         DataSourceConfig config = configWithName("db1");
         when(dataSourceProperties.getDataSources()).thenReturn(List.of(config));
-        when(userRepository.findAllUsersAsync(config)).thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(userRepository.findAllUsersAsync(eq(config), any())).thenReturn(CompletableFuture.completedFuture(List.of()));
 
-        List<UserDto> result = service.fetchAllUsers();
+        List<UserDto> result = service.fetchAllUsers(UserFilter.empty());
 
         assertThat(result).isEmpty();
         verifyNoInteractions(userMapper);
@@ -100,13 +103,13 @@ class UserAggregationServiceTest {
         UserDto dto3 = new UserDto("3", "bwillis", "Bruce", "Willis");
 
         when(dataSourceProperties.getDataSources()).thenReturn(List.of(config1, config2));
-        when(userRepository.findAllUsersAsync(config1)).thenReturn(CompletableFuture.completedFuture(List.of(user1, user2)));
-        when(userRepository.findAllUsersAsync(config2)).thenReturn(CompletableFuture.completedFuture(List.of(user3)));
+        when(userRepository.findAllUsersAsync(eq(config1), any())).thenReturn(CompletableFuture.completedFuture(List.of(user1, user2)));
+        when(userRepository.findAllUsersAsync(eq(config2), any())).thenReturn(CompletableFuture.completedFuture(List.of(user3)));
         when(userMapper.toDto(user1)).thenReturn(dto1);
         when(userMapper.toDto(user2)).thenReturn(dto2);
         when(userMapper.toDto(user3)).thenReturn(dto3);
 
-        List<UserDto> result = service.fetchAllUsers();
+        List<UserDto> result = service.fetchAllUsers(UserFilter.empty());
 
         assertThat(result).hasSize(3);
         assertThat(result).containsExactlyInAnyOrder(dto1, dto2, dto3);
@@ -119,10 +122,10 @@ class UserAggregationServiceTest {
         User user2 = new User("2", "jsmith", "Jane", "Smith");
 
         when(dataSourceProperties.getDataSources()).thenReturn(List.of(config));
-        when(userRepository.findAllUsersAsync(config)).thenReturn(CompletableFuture.completedFuture(List.of(user1, user2)));
+        when(userRepository.findAllUsersAsync(eq(config), any())).thenReturn(CompletableFuture.completedFuture(List.of(user1, user2)));
         when(userMapper.toDto(any())).thenReturn(new UserDto("x", "x", "x", "x"));
 
-        service.fetchAllUsers();
+        service.fetchAllUsers(UserFilter.empty());
 
         verify(userMapper).toDto(user1);
         verify(userMapper).toDto(user2);

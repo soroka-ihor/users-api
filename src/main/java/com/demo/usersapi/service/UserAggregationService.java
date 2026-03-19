@@ -2,6 +2,7 @@ package com.demo.usersapi.service;
 
 import com.demo.usersapi.config.DataSourceProperties;
 import com.demo.usersapi.mapper.UserMapper;
+import com.demo.usersapi.model.UserFilter;
 import com.demo.usersapi.repository.UserRepository;
 import com.example.aggregator.model.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,11 @@ public class UserAggregationService {
     private final UserRepository userRepository;
     private final DataSourceProperties dataSourcesProperties;
 
-    public List<UserDto> fetchAllUsers() {
+    public List<UserDto> fetchAllUsers(UserFilter filter) {
         log.info("Starting users aggregation from {} data sources", dataSourcesProperties.getDataSources().size());
 
         var futures = dataSourcesProperties.getDataSources().stream()
-                .map(userRepository::findAllUsersAsync)
+                .map(config -> userRepository.findAllUsersAsync(config, filter))
                 .toList();
 
         return futures.stream()

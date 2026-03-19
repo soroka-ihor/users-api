@@ -3,7 +3,9 @@ package com.demo.usersapi.repository;
 import com.demo.usersapi.config.DataSourceConfig;
 import com.demo.usersapi.config.MappingConfig;
 import com.demo.usersapi.factory.DatabaseStrategyRegistry;
+import com.demo.usersapi.model.QuerySpec;
 import com.demo.usersapi.model.User;
+import com.demo.usersapi.model.UserFilter;
 import com.demo.usersapi.strategy.DatabaseStrategy;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.AfterEach;
@@ -24,8 +26,8 @@ import static org.mockito.Mockito.*;
 
 class JdbcUserRepositoryTest {
 
-    private static final String QUERY = "SELECT id, username, name, surname FROM users";
-    private static final String EMPTY_QUERY = "SELECT id, username, name, surname FROM empty_users";
+    private static final QuerySpec QUERY = new QuerySpec("SELECT id, username, name, surname FROM users", Map.of());
+    private static final QuerySpec EMPTY_QUERY = new QuerySpec("SELECT id, username, name, surname FROM empty_users", Map.of());
 
     private EmbeddedDatabase dataSource;
     private DatabaseStrategy strategy;
@@ -76,9 +78,9 @@ class JdbcUserRepositoryTest {
 
     @Test
     void findAllUsers_returnsAllUsersFromDataSource() {
-        when(strategy.buildQuery(any(), any())).thenReturn(QUERY);
+        when(strategy.buildQuery(any(), any(), any())).thenReturn(QUERY);
 
-        List<User> result = repository.findAllUsers(config);
+        List<User> result = repository.findAllUsers(config, UserFilter.empty());
 
         assertThat(result).hasSize(2);
         assertThat(result).extracting(User::getId).containsExactlyInAnyOrder("1", "2");
@@ -89,7 +91,7 @@ class JdbcUserRepositoryTest {
     void findAllUsers_throwsIllegalStateException_whenDataSourceNotFound() {
         config.setName("unknown-db");
 
-        assertThatThrownBy(() -> repository.findAllUsers(config))
+        assertThatThrownBy(() -> repository.findAllUsers(config, UserFilter.empty()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("unknown-db");
     }
@@ -97,42 +99,42 @@ class JdbcUserRepositoryTest {
     @Test
     void findAllUsers_usesDefaultStrategy_whenConfiguredStrategyNotRegistered() {
         DatabaseStrategy defaultStrategy = mock(DatabaseStrategy.class);
-        when(defaultStrategy.buildQuery(any(), any())).thenReturn(QUERY);
+        when(defaultStrategy.buildQuery(any(), any(), any())).thenReturn(QUERY);
         when(strategyRegistry.getDatabaseStrategies()).thenReturn(Map.of("default", defaultStrategy));
 
         config.setStrategy("unknown-strategy");
 
-        List<User> result = repository.findAllUsers(config);
+        List<User> result = repository.findAllUsers(config, UserFilter.empty());
 
         assertThat(result).hasSize(2);
-        verify(defaultStrategy).buildQuery(eq("users"), any());
+        verify(defaultStrategy).buildQuery(eq("users"), any(), any());
     }
 
     @Test
     void findAllUsers_lowercasesStrategyName_beforeLookup() {
-        when(strategy.buildQuery(any(), any())).thenReturn(QUERY);
+        when(strategy.buildQuery(any(), any(), any())).thenReturn(QUERY);
         config.setStrategy("POSTGRES");
 
-        List<User> result = repository.findAllUsers(config);
+        List<User> result = repository.findAllUsers(config, UserFilter.empty());
 
         assertThat(result).hasSize(2);
-        verify(strategy).buildQuery(any(), any());
+        verify(strategy).buildQuery(any(), any(), any());
     }
 
     @Test
     void findAllUsers_passesTableAndMappingToStrategy() {
-        when(strategy.buildQuery(any(), any())).thenReturn(QUERY);
+        when(strategy.buildQuery(any(), any(), any())).thenReturn(QUERY);
 
-        repository.findAllUsers(config);
+        repository.findAllUsers(config, UserFilter.empty());
 
-        verify(strategy).buildQuery(eq("users"), eq(config.getMapping()));
+        verify(strategy).buildQuery(eq("users"), eq(config.getMapping()), any());
     }
 
     @Test
     void findAllUsers_returnsEmptyList_whenTableHasNoRows() {
-        when(strategy.buildQuery(any(), any())).thenReturn(EMPTY_QUERY);
+        when(strategy.buildQuery(any(), any(), any())).thenReturn(EMPTY_QUERY);
 
-        List<User> result = repository.findAllUsers(config);
+        List<User> result = repository.findAllUsers(config, UserFilter.empty());
 
         assertThat(result).isEmpty();
     }

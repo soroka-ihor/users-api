@@ -17,7 +17,7 @@ import java.time.Duration;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("integration")
 @Testcontainers
-public abstract class BaseAbstractIntegrationTest {
+public abstract class AbstractIntegrationTest {
 
     private static final String COMPOSE_TEST_YAML = "src/integration/resources/integration/docker-compose-test.yml";
 

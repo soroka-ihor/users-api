@@ -11,6 +11,25 @@ paths:
         - Users
       summary: Get all users from all configured data sources
       operationId: getAllUsers
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by name (partial match)
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by username (partial match)
+        - name: surname
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by surname (partial match)
       responses:
         '200':
           description: Successful response

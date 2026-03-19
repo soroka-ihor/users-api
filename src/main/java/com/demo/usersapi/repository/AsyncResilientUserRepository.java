@@ -2,6 +2,7 @@ package com.demo.usersapi.repository;
 
 import com.demo.usersapi.config.DataSourceConfig;
 import com.demo.usersapi.model.User;
+import com.demo.usersapi.model.UserFilter;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +27,12 @@ public abstract class AsyncResilientUserRepository implements UserRepository {
     }
 
     @Override
-    public CompletableFuture<List<User>> findAllUsersAsync(DataSourceConfig config) {
+    public CompletableFuture<List<User>> findAllUsersAsync(DataSourceConfig config, UserFilter filter) {
         CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker(config.getName());
         return CompletableFuture
                 .supplyAsync(CircuitBreaker.decorateSupplier(cb, () -> {
                     log.info("Fetching users from [{}] at URL: {}", config.getName(), config.getUrl());
-                    return findAllUsers(config);
+                    return findAllUsers(config, filter);
                 }), taskExecutor)
                 .orTimeout(config.getQueryTimeoutSeconds(), TimeUnit.SECONDS)
                 .handle((result, ex) -> {
