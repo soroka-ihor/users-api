@@ -1,16 +1,3 @@
-spring:
-  application:
-    name: users-api
-
-server:
-  port: 8887
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
 resilience4j:
   circuitbreaker:
     configs:
@@ -35,7 +22,7 @@ app:
   data-sources:
     - name: postgres-db
       strategy: postgres
-      url: jdbc:postgresql://localhost:5434/users_db
+      url: jdbc:postgresql://localhost:54331/users_db
       table: users
       user: testuser
       password: testpass
@@ -53,7 +40,7 @@ app:
         surname: last_name
     - name: oracle-db
       strategy: oracle
-      url: jdbc:oracle:thin:@localhost:1521/users_db
+      url: jdbc:oracle:thin:@localhost:15211/users_db
       table: user_table
       user: testuser
       password: testpass

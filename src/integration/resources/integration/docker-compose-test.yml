@@ -1,0 +1,23 @@
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "54331:5432"
+    volumes:
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+
+  oracle-db:
+    image: gvenzl/oracle-xe:21-slim
+    environment:
+      ORACLE_PASSWORD: testpass
+      ORACLE_DATABASE: users_db
+      APP_USER: testuser
+      APP_USER_PASSWORD: testpass
+    ports:
+      - "15211:1521"
+    volumes:
+      - ./init-oracle.sql:/container-entrypoint-initdb.d/init.sql

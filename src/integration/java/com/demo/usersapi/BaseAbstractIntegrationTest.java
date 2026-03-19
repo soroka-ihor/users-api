@@ -1,43 +1,35 @@
 package com.demo.usersapi;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.oracle.OracleContainer;
 
+import java.io.File;
+import java.time.Duration;
+
+@Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("integration")
 @Testcontainers
-@ActiveProfiles("integration-test")
 public abstract class BaseAbstractIntegrationTest {
 
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("users_db")
-            .withUsername("testuser")
-            .withPassword("testpass")
-            .withInitScript("integration/init-postgres.sql");
+    private static final String COMPOSE_TEST_YAML = "src/integration/resources/integration/docker-compose-test.yml";
 
     @Container
-    static OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:23-slim-faststart")
-            .withInitScript("integration/init-oracle.sql");
-
-    @DynamicPropertySource
-    static void overrideDataSourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("app.data-sources[0].url", postgres::getJdbcUrl);
-        registry.add("app.data-sources[0].user", postgres::getUsername);
-        registry.add("app.data-sources[0].password", postgres::getPassword);
-
-        registry.add("app.data-sources[1].url", oracle::getJdbcUrl);
-        registry.add("app.data-sources[1].user", oracle::getUsername);
-        registry.add("app.data-sources[1].password", oracle::getPassword);
-    }
+    static final ComposeContainer container = new ComposeContainer(new File(COMPOSE_TEST_YAML))
+            .withLocalCompose(true)
+            .withExposedService("postgres-db", 5432,
+                    Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)))
+            .withExposedService("oracle-db", 1521,
+                    Wait.forLogMessage(".*DATABASE IS READY TO USE!.*", 1)
+                            .withStartupTimeout(Duration.ofMinutes(5)));
 
     @Autowired
-    protected TestRestTemplate restTemplate;
+    public TestRestTemplate restTemplate;
 }

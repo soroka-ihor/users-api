@@ -1,16 +1,3 @@
-spring:
-  application:
-    name: users-api
-
-server:
-  port: 8887
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
 resilience4j:
   circuitbreaker:
     configs:
@@ -35,7 +22,7 @@ app:
   data-sources:
     - name: postgres-db
       strategy: postgres
-      url: jdbc:postgresql://localhost:5434/users_db
+      url: jdbc:postgresql://localhost:54331/users_db
       table: users
       user: testuser
       password: testpass
@@ -51,21 +38,21 @@ app:
         username: login
         name: first_name
         surname: last_name
-    - name: oracle-db
-      strategy: oracle
-      url: jdbc:oracle:thin:@localhost:1521/users_db
-      table: user_table
-      user: testuser
-      password: testpass
-      query-timeout-seconds: 5
-      pool:
-        maximum-pool-size: 10
-        minimum-idle: 2
-        connection-timeout-ms: 5000
-        idle-timeout-ms: 300000
-        max-lifetime-ms: 600000
-      mapping:
-        id: ldap_login
-        username: ldap_login
-        name: name
-        surname: surname
+#    - name: oracle-db
+#      strategy: oracle
+#      url: jdbc:oracle:thin:@localhost:1521/users_db
+#      table: user_table
+#      user: testuser
+#      password: testpass
+#      query-timeout-seconds: 5
+#      pool:
+#        maximum-pool-size: 10
+#        minimum-idle: 2
+#        connection-timeout-ms: 5000
+#        idle-timeout-ms: 300000
+#        max-lifetime-ms: 600000
+#      mapping:
+#        id: ldap_login
+#        username: ldap_login
+#        name: name
+#        surname: surname
