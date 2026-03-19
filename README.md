@@ -47,12 +47,18 @@ app:
    ```
 2. Start all services (databases + application):
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 3. Wait for the containers to initialize, then access:
    - **API**: `http://localhost:8887/users`
    - **Swagger UI**: `http://localhost:8887/swagger-ui.html`
 
+### Tip for MacOS
+If you use MacOS, you should run cd command with 'real' path:
+```bash
+cd /Users/sparkle/Documents/learn/users-api - correct ✅
+cd /users/sparkle/documents/learn/users-api - not correct 🚫
+```
 ### Locally (databases via Docker)
 
 1. Clone the repository:
@@ -62,7 +68,7 @@ app:
    ```
 2. Start the databases:
    ```bash
-   docker-compose up -d postgres oracle mysql
+   docker compose up -d postgres oracle mysql
    ```
 3. Build the project:
    ```bash
